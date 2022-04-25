@@ -1,49 +1,44 @@
-import { JetterSetHandler } from '../types';
+import { JetterSetDeriver, JetterSetWatcher } from '../types';
 
 export default function createStore() {
-  const store = new Proxy(
-    Object.create({
-      derivers: [],
-      resolvers: {},
-      watchers: {},
-      derive(prop: string, handler: JetterSetHandler) {
-        store.resolvers[prop] = handler;
-        store[prop] = handler.call(store, store);
-      },
-      onChange(prop: string, handler: JetterSetHandler) {
-        const { watchers } = store;
-
-        watchers[prop] = watchers[prop] || [];
-        watchers[prop].push(handler);
-      },
-      offChange(prop: string, handler: JetterSetHandler) {
-        const { watchers } = store;
-        watchers[prop] = watchers[prop].filter((h: JetterSetHandler) => h !== handler);
-      },
-      resolve(prop?: string) {
-        const { resolvers } = store;
-
-        if (prop) {
-          store[prop] = resolvers[prop].call(store, store);
-        } else {
-          for (const prop in resolvers) {
-            store[prop] = resolvers[prop].call(store, store);
+  const store = Object.create({
+    derivers: {},
+    derivatives: {},
+    history: {},
+    watchers: {},
+    derive(derivedProp: string, handler: JetterSetDeriver) {
+      // capture any asks of the store so we can map derivers
+      const getTrappedStore = new Proxy(store, {
+        get(obj, deriver) {
+          if (Object.hasOwnProperty.call(store, deriver)) {
+            store.derivers[deriver] = store.derivers[deriver] || [];
+            store.derivers[deriver].push(derivedProp);
           }
-        }
 
-        return store;
-      },
-    }),
-    {
-      get(obj, prop) {
-        if (Object.hasOwnProperty.call(store, prop)) {
-          store.derivers.push(prop);
-        }
+          return obj[deriver];
+        },
+      });
 
-        return obj[prop];
-      },
+      store.derivatives[derivedProp] = handler;
+      store[derivedProp] = handler.call(getTrappedStore, getTrappedStore);
+
+      return store;
     },
-  );
+    onChange(prop: string, handler: JetterSetWatcher) {
+      const { watchers } = store;
+
+      watchers[prop] = watchers[prop] || [];
+      watchers[prop].push(handler);
+
+      return store;
+    },
+    offChange(prop: string, handler: JetterSetWatcher) {
+      const { watchers } = store;
+      watchers[prop] = watchers[prop].filter((h: JetterSetWatcher) => h !== handler);
+
+      return store;
+    },
+  });
 
   return store;
 }
