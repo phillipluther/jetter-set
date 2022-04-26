@@ -1,7 +1,11 @@
 {
+  "include": ["src/*"],
+  "exclude": ["dist"],
   "compilerOptions": {
     "strict": true,
     "esModuleInterop": true,
-    "baseUrl": "src"
+    "outDir": "dist",
+    "declaration": true,
+    "declarationDir": "."
   }
 }

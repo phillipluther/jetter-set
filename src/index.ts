@@ -1,7 +1,7 @@
 import { JetterSetObject, JetterSetWatcher } from './types';
 import createStore from './utils/create-store';
 
-export default function jetterSet(attrs: JetterSetObject): JetterSetObject {
+export function jetSet(attrs: JetterSetObject): JetterSetObject {
   const store = createStore();
 
   return new Proxy(Object.assign(store, attrs), {
@@ -11,7 +11,7 @@ export default function jetterSet(attrs: JetterSetObject): JetterSetObject {
     set(store, prop, val) {
       if (store.derivatives[prop]) {
         console.warn(
-          '[JetterSet]',
+          '[jetSet]',
           `${prop.toString()} is a derived property and can not be set directly; if you need to change how this value is calculated use the 'derive' API instead`,
         );
 
@@ -55,41 +55,41 @@ export default function jetterSet(attrs: JetterSetObject): JetterSetObject {
   });
 }
 
-const o = jetterSet({
-  apples: 2,
-  pears: 3,
-  carrots: 6,
-  onions: 2,
-});
+// const o = jetterSet({
+//   apples: 2,
+//   pears: 3,
+//   carrots: 6,
+//   onions: 2,
+// });
 
-o.derive('fruit', (obj: JetterSetObject) => {
-  return obj.apples + obj.pears;
-});
+// o.derive('fruit', (obj: JetterSetObject) => {
+//   return obj.apples + obj.pears;
+// });
 
-o.onChange('carrots', (newVal: number) => {
-  if (newVal < 2) {
-    console.log('\n> Buy more carrots!\n');
-  }
-});
+// o.onChange('carrots', (newVal: number) => {
+//   if (newVal < 2) {
+//     console.log('\n> Buy more carrots!\n');
+//   }
+// });
 
-o.onChange('fruit', (newVal: number, oldVal: number) => {
-  console.log('\n> Nice fruit update:', `from ${oldVal} to ${newVal}\n`);
-});
+// o.onChange('fruit', (newVal: number, oldVal: number) => {
+//   console.log('\n> Nice fruit update:', `from ${oldVal} to ${newVal}\n`);
+// });
 
-console.log('\n\n-----\nBeginning\n', o);
+// console.log('\n\n-----\nBeginning\n', o);
 
-// o.fruit = 99;
+// // o.fruit = 99;
 
-// console.log('Derivers', o.derivers);
-// console.log('gimme carrots', o.carrots);
-// console.log('New derivers', o.derivers);
+// // console.log('Derivers', o.derivers);
+// // console.log('gimme carrots', o.carrots);
+// // console.log('New derivers', o.derivers);
 
-o.apples = 5;
-o.carrots = 1;
-o.pears = 10;
+// o.apples = 5;
+// o.carrots = 1;
+// o.pears = 10;
 
-// console.log('Object', o);
-// console.log('Derived fruit', o.fruit);
-console.log('\n\n-----\nEnding\n', o);
+// // console.log('Object', o);
+// // console.log('Derived fruit', o.fruit);
+// console.log('\n\n-----\nEnding\n', o);
 
-console.log('Watchers', o.watchers);
+// console.log('Watchers', o.watchers);

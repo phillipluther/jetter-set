@@ -60,3 +60,5 @@ typings/
 # Dist output
 dist
 
+# Cache trash
+.DS_*
