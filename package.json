@@ -1,5 +1,5 @@
 {
-  "name": "jetterset",
+  "name": "jetter-set",
   "version": "0.1.0",
   "description": "",
   "main": "dist/index.js",
@@ -7,11 +7,11 @@
   "scripts": {
     "build": "rollup -c",
     "pub": "npx np",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "jest --coverage"
   },
   "keywords": [],
   "author": "Phillip Luther <dev@phillipluther.com>",
-  "license": "ISC",
+  "license": "MIT",
   "devDependencies": {
     "@rollup/plugin-typescript": "^8.3.2",
     "@types/jest": "^27.4.1",

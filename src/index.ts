@@ -1,95 +1,46 @@
-import { JetterSetObject, JetterSetWatcher } from './types';
-import createStore from './utils/create-store';
+import { JetterSetObject } from './types';
+import jetterSet from './create-jetter-set';
 
-export function jetSet(attrs: JetterSetObject): JetterSetObject {
-  const store = createStore();
+const o = jetterSet({
+  apples: 2,
+  pears: 3,
+  carrots: 6,
+  onions: 2,
+});
 
-  return new Proxy(Object.assign(store, attrs), {
-    get(store, prop) {
-      return store[prop];
-    },
-    set(store, prop, val) {
-      if (store.derivatives[prop]) {
-        console.warn(
-          '[jetSet]',
-          `${prop.toString()} is a derived property and can not be set directly; if you need to change how this value is calculated use the 'derive' API instead`,
-        );
+o.derive('fruit', (obj: JetterSetObject) => {
+  return obj.apples + obj.pears;
+});
 
-        return true;
-      }
+o.onChange('carrots', (newVal: number) => {
+  if (newVal < 2) {
+    console.log('\n> Buy more carrots!\n');
+  }
+});
 
-      store.history = Object.keys(store).reduce((acc: JetterSetObject, key) => {
-        acc[key] = store[key];
-        return acc;
-      }, {});
+const fruitChanger = (newVal: number, oldVal: number) => {
+  console.log('\n> Nice fruit update:', `from ${oldVal} to ${newVal}\n`);
+};
 
-      const hasDerivatives = typeof store.derivers[prop] !== 'undefined';
+o.onChange('fruit', fruitChanger);
 
-      // apply updates
-      store[prop] = val;
+console.log('\n\n-----\nBeginning\n', o);
 
-      if (hasDerivatives) {
-        store.derivers[prop].forEach((derivedProp: string) => {
-          store[derivedProp] = store.derivatives[derivedProp].call(store, store);
-        });
-      }
+// o.fruit = 99;
 
-      // trigger watchers
-      const watchers = store.watchers[prop] ? store.watchers[prop].slice() : [];
-      watchers.forEach((watcher: JetterSetWatcher) => {
-        watcher.call(store, val, store.history[prop], store);
-      });
+// console.log('Derivers', o.derivers);
+// console.log('gimme carrots', o.carrots);
+// console.log('New derivers', o.derivers);
 
-      if (hasDerivatives) {
-        store.derivers[prop].forEach((derivedProp: string) => {
-          if (store.watchers[derivedProp]) {
-            store.watchers[derivedProp].forEach((watcher: JetterSetWatcher) => {
-              watcher.call(store, store[derivedProp], store.history[derivedProp], store);
-            });
-          }
-        });
-      }
+o.apples = 5;
+o.carrots = 1;
+o.pears = 10;
 
-      return true;
-    },
-  });
-}
+o.offChange('fruit', fruitChanger);
 
-// const o = jetterSet({
-//   apples: 2,
-//   pears: 3,
-//   carrots: 6,
-//   onions: 2,
-// });
+o.apples = 99;
+// console.log('Object', o);
+// console.log('Derived fruit', o.fruit);
+console.log('\n\n-----\nEnding\n', o);
 
-// o.derive('fruit', (obj: JetterSetObject) => {
-//   return obj.apples + obj.pears;
-// });
-
-// o.onChange('carrots', (newVal: number) => {
-//   if (newVal < 2) {
-//     console.log('\n> Buy more carrots!\n');
-//   }
-// });
-
-// o.onChange('fruit', (newVal: number, oldVal: number) => {
-//   console.log('\n> Nice fruit update:', `from ${oldVal} to ${newVal}\n`);
-// });
-
-// console.log('\n\n-----\nBeginning\n', o);
-
-// // o.fruit = 99;
-
-// // console.log('Derivers', o.derivers);
-// // console.log('gimme carrots', o.carrots);
-// // console.log('New derivers', o.derivers);
-
-// o.apples = 5;
-// o.carrots = 1;
-// o.pears = 10;
-
-// // console.log('Object', o);
-// // console.log('Derived fruit', o.fruit);
-// console.log('\n\n-----\nEnding\n', o);
-
-// console.log('Watchers', o.watchers);
+console.log('Watchers', o.watchers);
