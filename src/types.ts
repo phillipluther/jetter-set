@@ -1,3 +1,15 @@
-export type JetterSetObject = { [key: string]: any };
-export type JetterSetDeriver = (store: JetterSetObject) => any;
-export type JetterSetWatcher = (newVal?: any, oldVal?: any, store?: JetterSetObject) => any;
+export type JetterSetStoreKey = symbol | string;
+export type JetterSetPropHandler = (store: JetterSetStore) => any;
+export type JetterSetStoreMethod = (
+  prop: JetterSetStoreKey,
+  handler: JetterSetPropHandler,
+) => JetterSetStore;
+
+export interface JetterSetStore {
+  derivatives: Set<JetterSetStoreKey>;
+  watchers: { [key: JetterSetStoreKey]: JetterSetPropHandler[] };
+  derive: JetterSetStoreMethod;
+  onChange: JetterSetStoreMethod;
+  offChange: JetterSetStoreMethod;
+  [key: JetterSetStoreKey]: any;
+}

@@ -1,49 +1,28 @@
-import { JetterSetObject, JetterSetWatcher } from './types';
 import createStore from './create-store';
 
-export default function jetterSet(attrs: JetterSetObject = {}): JetterSetObject {
-  const store = createStore();
+export default function createJetterSet(props: { [key: string]: any }) {
+  const store = createStore(props);
 
-  return new Proxy(Object.assign(store, attrs), {
-    set(store, prop, val) {
-      if (store.derivatives[prop]) {
-        console.warn(
-          '[jetterSet]',
-          `${prop.toString()} is a derived property and can not be set directly`,
-        );
+  return new Proxy(store, {
+    set(obj, prop, val) {
+      const oldVal = obj[prop];
 
+      // noop on no update
+      if (val === oldVal) {
         return true;
       }
 
-      store.history = Object.keys(store).reduce((acc: JetterSetObject, key) => {
-        acc[key] = store[key];
-        return acc;
-      }, {});
-
-      const hasDerivatives = typeof store.derivers[prop] !== 'undefined';
-
-      // apply updates
-      store[prop] = val;
-
-      if (hasDerivatives) {
-        store.derivers[prop].forEach((derivedProp: string) => {
-          store[derivedProp] = store.derivatives[derivedProp].call(store, store);
-        });
+      if (obj.derivatives.has(prop)) {
+        console.warn(
+          `"${prop.toString()}" is a derived property; its value of ${val} will be overwritten when deriving props change`,
+        );
       }
 
-      // trigger watchers
-      const watchers = store.watchers[prop] ? store.watchers[prop].slice() : [];
-      watchers.forEach((watcher: JetterSetWatcher) => {
-        watcher.call(store, val, store.history[prop], store);
-      });
+      obj[prop] = val;
 
-      if (hasDerivatives) {
-        store.derivers[prop].forEach((derivedProp: string) => {
-          if (store.watchers[derivedProp]) {
-            store.watchers[derivedProp].forEach((watcher: JetterSetWatcher) => {
-              watcher.call(store, store[derivedProp], store.history[derivedProp], store);
-            });
-          }
+      if (obj.watchers[prop]) {
+        obj.watchers[prop].forEach((handler) => {
+          handler.call(obj, obj);
         });
       }
 

@@ -1,55 +1,80 @@
-import { JetterSetObject } from '../types';
+import { JetterSetStore, JetterSetPropHandler } from '../types';
 import createStore from '../create-store';
 
 describe('createStore()', () => {
-  const protoProps = ['derivers', 'derivatives', 'history', 'watchers'];
-  const protoMethods = ['derive', 'onChange', 'offChange'];
+  let store: JetterSetStore;
+  let changeSpy: jest.SpyInstance;
 
-  let store: JetterSetObject;
+  const testData = {
+    apples: 3,
+    pears: 2,
+    carrots: 5,
+    onions: 2,
+  };
 
   beforeEach(() => {
-    store = createStore();
+    store = createStore(testData);
+    store.derive('fruits', (obj) => obj.apples + obj.pears);
+
+    changeSpy = jest.fn();
   });
 
-  test('is a function returning an object', () => {
+  test('returns an object', () => {
     expect(typeof createStore).toEqual('function');
     expect(typeof store).toEqual('object');
     expect(store instanceof Object).toBe(true);
   });
 
-  test('sets a property', () => {
-    store.test = 'ok';
-    expect(store.test).toEqual('ok');
+  test('does not require default props', () => {
+    store = createStore();
+    expect(Object.keys(store)).toHaveLength(0);
   });
 
-  test('deletes a property', () => {
-    store.test = 'ok';
-    delete store.test;
-    expect(store.test).toBeUndefined();
-  });
-
-  test('contains appropriate props in the prototype chain', () => {
-    expect.assertions(protoProps.length);
-
-    protoProps.forEach((prop) => {
-      expect(store[prop]).toBeDefined();
-    });
-  });
-
-  test('contains appropriate methods in the prototype chain', () => {
-    expect.assertions(protoMethods.length);
-
-    protoMethods.forEach((method) => {
-      expect(store[method]).toBeDefined();
-    });
-  });
-
-  test('only exposes enumerable props', () => {
-    store.key1 = 'ok';
-    store.key2 = 12;
-
+  test('derived properties are indistinguishable from static props', () => {
     const keys = Object.keys(store);
 
-    expect(keys.length).toEqual(2);
+    expect(store.fruits).toEqual(5);
+    expect(keys.length).toEqual(5);
+    expect(keys.includes('fruits')).toBe(true);
+  });
+
+  test('keeps track of derived properties', () => {
+    store.derive('other', () => null);
+
+    expect(store.derivatives.has('fruits')).toBe(true);
+    expect(store.derivatives.has('other')).toBe(true);
+  });
+
+  test('watches deriving props for updates', () => {
+    expect(store.watchers.apples).toBeDefined();
+    expect(store.watchers.apples).toHaveLength(1);
+
+    expect(store.watchers.pears).toBeDefined();
+    expect(store.watchers.pears).toHaveLength(1);
+  });
+
+  test('creates a watcher to update derived values on deriving prop changes', () => {
+    store.apples = 10;
+    store.watchers.apples[0](store);
+
+    expect(store.fruits).toEqual(12);
+  });
+
+  test('can watch for prop changes', () => {
+    store.onChange('onions', (obj) => obj);
+    expect(store.watchers.onions).toHaveLength(1);
+  });
+
+  test('can unwatch prop changes', () => {
+    const watcher1: JetterSetPropHandler = (obj) => obj;
+    const watcher2: JetterSetPropHandler = (obj) => obj;
+
+    store.onChange('onions', watcher1);
+    store.onChange('onions', watcher2);
+
+    expect(store.watchers.onions).toHaveLength(2);
+
+    store.offChange('onions', watcher2);
+    expect(store.watchers.onions).toHaveLength(1);
   });
 });

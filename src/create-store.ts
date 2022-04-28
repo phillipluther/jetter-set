@@ -1,58 +1,44 @@
-import { JetterSetDeriver, JetterSetWatcher } from './types';
+import { JetterSetStoreKey, JetterSetStore } from './types';
 
-export default function createStore() {
-  const store = Object.create({
-    derivers: {},
-    derivatives: {},
-    history: {},
+export default function createStore(props: { [key: string]: any } = {}): JetterSetStore {
+  const Store: JetterSetStore = Object.create({
+    derivatives: new Set(),
     watchers: {},
-
-    /**
-     *
-     */
-    derive(derivedProp: string, handler: JetterSetDeriver) {
-      // set a .get trap so we can grab properties used to create derived properties
-      const proxyContext = new Proxy(store, {
-        get(proxiedStore, derivingProp) {
-          if (Object.hasOwnProperty.call(proxiedStore, derivingProp)) {
-            proxiedStore.derivers[derivingProp] = proxiedStore.derivers[derivingProp] || [];
-            proxiedStore.derivers[derivingProp].push(derivedProp);
-          }
-
-          return store[derivingProp];
+    derive(prop, handler) {
+      const derivingProps: JetterSetStoreKey[] = [];
+      const derivingContext = new Proxy(Store, {
+        get(obj, prop) {
+          derivingProps.push(prop);
+          return Reflect.get(obj, prop);
         },
       });
 
-      store.derivatives[derivedProp] = handler;
-      // invoke the handler with the proxy as both context and argument, ensuring we capture
-      // property access via `arg.prop` and `this.prop`
-      store[derivedProp] = handler.call(proxyContext, proxyContext);
+      Store.derivatives.add(prop);
 
-      return store;
+      Store[prop] = handler.call(derivingContext, derivingContext);
+
+      derivingProps.forEach((derivingProp) => {
+        Store.onChange(derivingProp, (store) => {
+          store[prop] = handler.call(store, store);
+        });
+      });
+
+      return Store;
     },
+    onChange(prop, handler) {
+      Store.watchers[prop] = Store.watchers[prop] || [];
+      Store.watchers[prop].push(handler);
 
-    /**
-     *
-     */
-    onChange(prop: string, handler: JetterSetWatcher) {
-      const { watchers } = store;
-
-      watchers[prop] = watchers[prop] || [];
-      watchers[prop].push(handler);
-
-      return store;
+      return Store;
     },
+    offChange(prop, handler) {
+      if (Store.watchers[prop]) {
+        Store.watchers[prop] = Store.watchers[prop].filter((h) => h !== handler);
+      }
 
-    /**
-     *
-     */
-    offChange(prop: string, handler: JetterSetWatcher) {
-      const { watchers } = store;
-      watchers[prop] = watchers[prop].filter((h: JetterSetWatcher) => h !== handler);
-
-      return store;
+      return Store;
     },
-  });
+  } as JetterSetStore);
 
-  return store;
+  return Object.assign(Store, props);
 }
