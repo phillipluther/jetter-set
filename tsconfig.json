@@ -1,11 +1,11 @@
 {
-  "include": ["src/*"],
+  "include": ["src/index.ts", "src/types.ts"],
   "exclude": ["dist"],
   "compilerOptions": {
     "strict": true,
     "esModuleInterop": true,
     "outDir": "dist",
-    "declaration": true,
-    "declarationDir": "."
+    "forceConsistentCasingInFileNames": true,
+    "declaration": true
   }
 }
