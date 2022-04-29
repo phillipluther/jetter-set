@@ -12,9 +12,22 @@
     "pub": "npx np",
     "test": "jest --coverage"
   },
-  "keywords": [],
+  "keywords": [
+    "state",
+    "watch",
+    "derive",
+    "live",
+    "data",
+    "bindings"
+  ],
   "author": "Phillip Luther <dev@phillipluther.com>",
   "license": "MIT",
+  "files": [
+    "package.json",
+    "README.md",
+    "LICENSE",
+    "dist"
+  ],
   "devDependencies": {
     "@types/jest": "^27.4.1",
     "@types/node": "^17.0.25",
