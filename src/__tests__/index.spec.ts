@@ -35,7 +35,6 @@ describe('jetterSet()', () => {
   });
 
   test('warns on directly setting derived props', () => {
-    store.derive('fruits', (obj) => obj.apples + obj.pears);
     store.fruits = 1;
 
     expect(warnSpy).toHaveBeenCalledTimes(1);
@@ -51,6 +50,14 @@ describe('jetterSet()', () => {
 
     expect(changeSpy).toHaveBeenCalledTimes(1);
     expect(changeSpy).toHaveBeenCalledWith(9, 3, store);
+  });
+
+  test('fires change handlers for derived props', () => {
+    store.onChange('fruits', changeSpy as unknown as JetterSetChangeHandler);
+    store.pears = 3;
+
+    expect(changeSpy).toHaveBeenCalledTimes(1);
+    expect(changeSpy).toHaveBeenCalledWith(6, 5, store);
   });
 
   test('only takes action when values change', () => {

@@ -2,9 +2,9 @@
 
 > Declarative, observable objects with live data bindings.
 
-This project modernizes my original JetSet micro-library; JetterSet (a better JetSet) trades a few bytes for robustness and an improved API. [Check out](https://www.npmjs.com/package/jet-set) the original, or read on.
+This project modernizes my original JetSet micro-library; JetterSet (a better JetSet) trades a few bytes for robustness and an improved feature set. [Check out](https://www.npmjs.com/package/jet-set) the original, or read on.
 
-JetterSet is about 930 bytes with 0 dependencies.
+JetterSet is about 1k with 0 dependencies.
 
 ## Installation and Usage
 
@@ -72,7 +72,20 @@ obj.onChange('apples', (newVal, oldVal, updatedObj) => {
   }
 });
 
-obj.apples = 1; // "Buy more apples! You had 3 but are now down to 1
+obj.apples = 1; // "Buy more apples! You had 3 but are now down to 1"
+```
+
+Naturally, you can watch for changes on derived values, too.
+
+```js
+const obj = jetterSet({ apples: 3, pears: 2 });
+
+obj.derive('fruit', (obj) => obj.apples + obj.pears);
+obj.onChange('fruit', (newVal, oldVal, updatedObj) => {
+  console.log(`You had ${oldVal} apples and pears; now you have ${newVal}`);
+});
+
+obj.apples = 1; // "You had 5 apples and pears; now you have 3"
 ```
 
 ### Unwatching Values | `offChange`

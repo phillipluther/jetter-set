@@ -56,9 +56,11 @@ typings/
 
 # dotenv environment variables file
 .env
+*.backup*
 
 # Dist output
-dist
+dist*
+demo*
 
 # Cache trash
 .DS_*
