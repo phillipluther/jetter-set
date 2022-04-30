@@ -4,7 +4,7 @@
   "description": "Declarative, observable objects with live data bindings",
   "main": "dist/index.js",
   "module": "dist/index.esm.js",
-  "types": "./lib/index.d.ts",
+  "types": "./dist/index.d.ts",
   "scripts": {
     "prebuild": "npm run clean",
     "build": "rollup -c",
