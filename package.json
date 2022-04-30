@@ -1,6 +1,6 @@
 {
   "name": "jetter-set",
-  "version": "0.1.3",
+  "version": "0.1.4",
   "description": "Declarative, observable objects with live data bindings",
   "main": "dist/index.js",
   "module": "dist/index.esm.js",
