@@ -21,6 +21,11 @@
     "bindings"
   ],
   "author": "Phillip Luther <dev@phillipluther.com>",
+  "homepage": "https://github.com/phillipluther/jetter-set#readme",
+  "bugs": {
+    "url": "https://github.com/phillipluther/jetter-set/issues",
+    "email": "dev@phillipluther.com"
+  },
   "license": "MIT",
   "files": [
     "package.json",
