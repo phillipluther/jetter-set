@@ -1,32 +1,32 @@
 import { JetterSetKey, JetterSet, JetterSetChangeHandler } from './types';
 
-export function jetterSet(props: { [key: string]: any }) {
+export function jetterSet(props: { [key: string]: unknown }) {
   const createSetTrap =
     (isSilent = false) =>
-    (obj: JetterSet, prop: any, val: any) => {
-      const oldVal = obj[prop];
+      (obj: JetterSet, prop: string, val: unknown) => {
+        const oldVal = obj[prop];
 
-      // noop on no update
-      if (val === oldVal) {
+        // noop on no update
+        if (val === oldVal) {
+          return true;
+        }
+
+        if (!isSilent && obj.derivatives.has(prop)) {
+          console.warn(
+            `"${prop.toString()}" is a derived property; its value of ${val} will be overwritten when deriving props change`,
+          );
+        }
+
+        obj[prop] = val;
+
+        if (obj.watchers[prop]) {
+          obj.watchers[prop].forEach((handler: JetterSetChangeHandler) => {
+            handler.call(obj, val, oldVal, obj);
+          });
+        }
+
         return true;
-      }
-
-      if (!isSilent && obj.derivatives.has(prop)) {
-        console.warn(
-          `"${prop.toString()}" is a derived property; its value of ${val} will be overwritten when deriving props change`,
-        );
-      }
-
-      obj[prop] = val;
-
-      if (obj.watchers[prop]) {
-        obj.watchers[prop].forEach((handler: JetterSetChangeHandler) => {
-          handler.call(obj, val, oldVal, obj);
-        });
-      }
-
-      return true;
-    };
+      };
 
   const store = Object.assign(
     Object.create({

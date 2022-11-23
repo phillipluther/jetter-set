@@ -1,7 +1,7 @@
 export type JetterSetKey = symbol | string;
 
-export type JetterSetChangeHandler = (newVal: any, oldVal: any, store: JetterSet) => any;
-export type JetterSetDerivativeHandler = (store: JetterSet) => any;
+export type JetterSetChangeHandler = (newVal: unknown, oldVal: unknown, store: JetterSet) => unknown;
+export type JetterSetDerivativeHandler = (store: JetterSet) => void;
 
 export type JetterSetWatcher = (prop: JetterSetKey, handler: JetterSetChangeHandler) => JetterSet;
 
