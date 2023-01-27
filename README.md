@@ -16,7 +16,7 @@ myObj.bananas = 3;
 console.log(myObj.fruit); // 6
 ```
 
-JetterSet is about 1k with 0 dependencies.
+JetterSet is < 1k (and < 500 bytes Gzipped) with 0 dependencies.
 
 ## Installation and Usage
 
