@@ -68,7 +68,7 @@ describe('jetterSet()', () => {
     expect(changeSpy).toHaveBeenCalledTimes(1);
   });
 
-  test('passes store param to derive handlers', () => {
+  test('passes store param to derivation handlers', () => {
     store.derive('anything', changeSpy as unknown as JetterSetDerivativeHandler);
     expect(changeSpy).toHaveBeenCalledWith(store);
   });
@@ -100,5 +100,34 @@ describe('jetterSet()', () => {
 
     // speaking of, ensure the derivative is still hooked up. if so, we removed the right one
     expect(store.fruits).toEqual(101);
+  });
+
+  test('uses derived values as signals', () => {
+    store.derive('veggies', ({ carrots, onions }) => carrots + onions);
+    store.derive('produce', ({ fruits, veggies }) => fruits + veggies);
+
+    expect(store.produce).toEqual(12);
+
+    store.carrots = 10;
+    expect(store.produce).toEqual(17);
+
+    store.apples = 10;
+    expect(store.produce).toEqual(24);
+  });
+
+  test('memoizes derived values', () => {
+    const memoSpy = jest.fn();
+
+    store.derive('veggies', ({ carrots, onions }) => {
+      memoSpy();
+      return carrots + onions;
+    });
+
+    store.veggies + store.veggies + store.veggies;
+    expect(memoSpy).toHaveBeenCalledTimes(1);
+
+    store.carrots = 0;
+
+    expect(memoSpy).toHaveBeenCalledTimes(2);
   });
 });

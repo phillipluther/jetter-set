@@ -1,7 +1,7 @@
 {
   "name": "jetter-set",
   "version": "0.1.5",
-  "description": "Declarative, observable objects with live data bindings",
+  "description": "Reactive little objects",
   "main": "dist/index.js",
   "module": "dist/index.esm.js",
   "types": "./dist/index.d.ts",

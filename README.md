@@ -1,8 +1,20 @@
 # JetterSet
 
-> Declarative, observable objects with live data bindings.
+JetterSet is a micro-library for making JavaScript objects reactive. It's (naturally!) declarative, memoizes derived/computed values, and provides callback hooks for handling property changes.
 
-This project modernizes my original JetSet micro-library; JetterSet (a better JetSet) trades a few bytes for robustness and an improved feature set. [Check out](https://www.npmjs.com/package/jet-set) the original, or read on.
+Effectively, this:
+
+```javascript
+myObj.apples = 3;
+myObj.bananas = 1;
+
+// assuming `fruit` is a computed property of apples + bananas …
+console.log(myObj.fruit); // 4
+
+myObj.bananas = 3;
+
+console.log(myObj.fruit); // 6
+```
 
 JetterSet is about 1k with 0 dependencies.
 
@@ -15,14 +27,14 @@ npm install jetter-set
 ```js
 import { jetterSet } from 'jetter-set';
 
-...
+…
 
-const superChargedObject = jetterSet({ ...defaultValues })
+const newReactiveObject = jetterSet({ ...defaultValues })
 ```
 
 ### Setting Values
 
-Treat your handy JetterSet as a standard JavaScript object.
+Treat your handily reactive JetterSet object as a standard JavaScript object. Properties get accessed and assigned normally -- no special getter or setter methods.
 
 ```js
 const obj = jetterSet({
@@ -31,9 +43,10 @@ const obj = jetterSet({
 });
 
 obj.oranges = 5;
+obj.bananas = 2;
 delete obj.apples;
 
-console.log(Object.keys(obj)); // pears, oranges
+console.log(Object.keys(obj)); // pears, oranges, bananas
 ```
 
 ### Deriving Values | `derive`
@@ -47,7 +60,7 @@ obj.derive('fruit', (obj) => obj.apples + obj.pears);
 console.log(obj.fruit); // 5
 ```
 
-Derived values change when upstream values change.
+Derived (or computed, if you prefer) values change when upstream values change.
 
 ```js
 const obj = jetterSet({ apples: 3, pears: 2 });
@@ -59,6 +72,10 @@ obj.apples = 100;
 
 console.log(obj.fruit); // 102
 ```
+
+#### Memoization of Derived/Computed Values
+
+When upstream signals change, JetterSet memoizes derived values. Reactive functions only runs once -- even when deriving values from other derived values -- and the result gets stashed in an intermediary cache until signaling values change again.
 
 ### Watching Values | `onChange`
 
@@ -102,3 +119,7 @@ obj.apples = 99; // "Changed!"
 obj.offChange('apples', changeHandler);
 obj.apples = 0; //
 ```
+
+## Inspiration
+
+This project modernizes my original [JetSet](https://www.npmjs.com/package/jet-set) micro-library, which I wrote as a code golf state management solution. JetterSet (a better JetSet) trades a few bytes for robustness and an improved feature set.
