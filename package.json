@@ -1,6 +1,6 @@
 {
   "name": "jetter-set",
-  "version": "0.1.5",
+  "version": "0.1.6",
   "description": "Reactive little objects",
   "main": "dist/index.js",
   "module": "dist/index.esm.js",
